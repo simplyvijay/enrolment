@@ -1,4 +1,4 @@
-package model;
+package com.cognizant.enrolment.model;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -49,6 +49,10 @@ public class Student {
 
     public Integer getCourseId() {
         return courseId;
+    }
+
+    public String getCourseName() {
+        return courseName;
     }
 
     public void setCourseId(Integer courseId) {

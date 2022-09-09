@@ -1,8 +1,8 @@
-package service;
+package com.cognizant.enrolment.service;
 
-import model.CourseList;
-import model.EnrolmentException;
-import model.Student;
+import com.cognizant.enrolment.model.CourseList;
+import com.cognizant.enrolment.model.EnrolmentException;
+import com.cognizant.enrolment.model.Student;
 
 public interface EnrolmentService {
     CourseList getCourseList() throws EnrolmentException;

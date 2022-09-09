@@ -1,20 +1,25 @@
-package model;
+package com.cognizant.enrolment.model;
 
 import java.util.Map;
 import java.util.TreeMap;
 
 public class CourseList {
-    private Map<Integer, String> courses;
+    private final Map<Integer, String> courses;
+
+    public CourseList() {
+        courses = new TreeMap<>();
+    }
 
     public void add(Integer courseId, String courseName) {
-        if(courses == null) {
-            courses = new TreeMap<>();
-        }
         courses.put(courseId, courseName);
     }
 
+    public int size() {
+        return courses.size();
+    }
+
     public boolean contains(Integer courseId) {
-        return courses != null && courses.containsKey(courseId);
+        return courses.containsKey(courseId);
     }
 
     @Override
