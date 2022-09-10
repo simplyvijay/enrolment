@@ -104,12 +104,12 @@ public class EnrolmentApplication {
         println(AVAILABLE_COURSES);
         out.println(getCourseList());
         int courseId = getCourseId();
-        if(!Objects.equals(student.getCourseId(), courseId)) {
+        if(Objects.equals(student.getCourseId(), courseId)) {
+            println(NO_UPDATE_REQUIRED);
+        } else {
             student.setCourseId(courseId);
             enrolmentService.update(student);
             println(UPDATE_CONFIRMATION);
-        } else {
-            println(NO_UPDATE_REQUIRED);
         }
     }
 

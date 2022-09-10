@@ -46,7 +46,7 @@ public final class MySqlEnrolmentService implements EnrolmentService {
             }
             return list;
         } catch (SQLException e) {
-            throw new EnrolmentException("Unable to get course list: " + e.getMessage());
+            throw new EnrolmentException("Unable to get course list: " + e.getMessage(), e);
         }
     }
 
@@ -73,7 +73,7 @@ public final class MySqlEnrolmentService implements EnrolmentService {
             statement2.executeUpdate();
             return EnrolmentStatus.SUCCESS;
         } catch (SQLException e) {
-            throw new EnrolmentException("Unable to add enrolment: " + e.getMessage());
+            throw new EnrolmentException("Unable to add enrolment: " + e.getMessage(), e);
         }
     }
 
@@ -98,7 +98,7 @@ public final class MySqlEnrolmentService implements EnrolmentService {
                 }
             }
         } catch (SQLException e) {
-            throw new EnrolmentException("Unable to fetch the enrolment: " + e.getMessage());
+            throw new EnrolmentException("Unable to fetch the enrolment: " + e.getMessage(), e);
         }
     }
 
@@ -110,7 +110,7 @@ public final class MySqlEnrolmentService implements EnrolmentService {
             statement.setString(2, student.getEmail());
             return (statement.executeUpdate() == 0)? EnrolmentStatus.NOT_EXISTS : EnrolmentStatus.SUCCESS;
         } catch (SQLException e) {
-            throw new EnrolmentException("Unable to update enrolment: " + e.getMessage());
+            throw new EnrolmentException("Unable to update enrolment: " + e.getMessage(), e);
         }
     }
 
@@ -121,7 +121,7 @@ public final class MySqlEnrolmentService implements EnrolmentService {
             statement.setString(1, email);
             return (statement.executeUpdate() == 0)? EnrolmentStatus.NOT_EXISTS : EnrolmentStatus.SUCCESS;
         } catch (SQLException e) {
-            throw new EnrolmentException("Unable to delete enrolment: " + e.getMessage());
+            throw new EnrolmentException("Unable to delete enrolment: " + e.getMessage(), e);
         }
     }
 
@@ -136,7 +136,7 @@ public final class MySqlEnrolmentService implements EnrolmentService {
                 return new MySqlEnrolmentService(url, user, pwd);
             }
         } catch (SQLException | IOException e) {
-            throw new EnrolmentException("Unable to create enrolment service: " + e.getMessage());
+            throw new EnrolmentException("Unable to create enrolment service: " + e.getMessage(), e);
         }
     }
 }

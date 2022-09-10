@@ -24,7 +24,7 @@ public final class EnrolmentServiceFactory {
         try {
             p = getProperties();
         } catch (IOException e) {
-            throw new EnrolmentException("Unable to open the properties file: " + PROPERTIES_FILE);
+            throw new EnrolmentException("Unable to open the properties file: " + PROPERTIES_FILE, e);
         }
 
         if(getProperty(p, ENROLMENT_SERVICE).equals(MYSQL_SERVICE)) {
@@ -34,7 +34,7 @@ public final class EnrolmentServiceFactory {
             String ddlFile = getProperty(p, DDL_FILE);
             return MySqlEnrolmentService.create(url, user, password, ddlFile);
         }
-        throw new EnrolmentException("No enrolment service configured");
+        throw new EnrolmentException("No enrolment service configured", null);
     }
 
     private static Properties getProperties() throws IOException {
