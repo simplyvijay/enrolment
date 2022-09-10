@@ -24,27 +24,27 @@ import static com.cognizant.enrolment.Constants.SAMPLE_FIRST_NAME;
 import static com.cognizant.enrolment.Constants.SAMPLE_LAST_NAME;
 import static com.cognizant.enrolment.Constants.SAMPLE_LOCATION;
 import static com.cognizant.enrolment.Constants.SAMPLE_STUDENT;
-import static com.cognizant.enrolment.application.EnrolmentApplication.DELETE_CONFIRMATION;
-import static com.cognizant.enrolment.application.EnrolmentApplication.ENROLMENT_CONFIRMATION;
-import static com.cognizant.enrolment.application.EnrolmentApplication.INVALID_INPUT;
-import static com.cognizant.enrolment.application.EnrolmentApplication.NOT_VALID_COURSE;
-import static com.cognizant.enrolment.application.EnrolmentApplication.NOT_VALID_DOB;
-import static com.cognizant.enrolment.application.EnrolmentApplication.NO_ENROLMENT_EXISTS;
-import static com.cognizant.enrolment.application.EnrolmentApplication.NO_UPDATE_REQUIRED;
-import static com.cognizant.enrolment.application.EnrolmentApplication.STUDENT_EXISTS;
-import static com.cognizant.enrolment.application.EnrolmentApplication.UPDATE_CONFIRMATION;
-import static com.cognizant.enrolment.application.EnrolmentApplication.getEnrolmentDetails;
+import static com.cognizant.enrolment.application.CommandLineApplication.DELETE_CONFIRMATION;
+import static com.cognizant.enrolment.application.CommandLineApplication.ENROLMENT_CONFIRMATION;
+import static com.cognizant.enrolment.application.CommandLineApplication.INVALID_INPUT;
+import static com.cognizant.enrolment.application.CommandLineApplication.NOT_VALID_COURSE;
+import static com.cognizant.enrolment.application.CommandLineApplication.NOT_VALID_DOB;
+import static com.cognizant.enrolment.application.CommandLineApplication.NO_ENROLMENT_EXISTS;
+import static com.cognizant.enrolment.application.CommandLineApplication.NO_UPDATE_REQUIRED;
+import static com.cognizant.enrolment.application.CommandLineApplication.STUDENT_EXISTS;
+import static com.cognizant.enrolment.application.CommandLineApplication.UPDATE_CONFIRMATION;
+import static com.cognizant.enrolment.application.CommandLineApplication.getEnrolmentDetails;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class EnrolmentApplicationTest {
-    EnrolmentApplication application;
+class CommandLineApplicationTest {
+    CommandLineApplication application;
 
     @BeforeAll
     void init() {
-        application = new EnrolmentApplication();
+        application = new CommandLineApplication();
     }
 
     @Test

@@ -20,18 +20,18 @@ public final class EnrolmentServiceFactory {
     }
 
     public static EnrolmentService getService() throws EnrolmentException {
-        Properties p;
+        Properties applicationProperties;
         try {
-            p = getProperties();
+            applicationProperties = getProperties();
         } catch (IOException e) {
             throw new EnrolmentException("Unable to open the properties file: " + PROPERTIES_FILE, e);
         }
 
-        if(getProperty(p, ENROLMENT_SERVICE).equals(MYSQL_SERVICE)) {
-            String url = getProperty(p, ENROLMENT_URL);
-            String user = getProperty(p, ENROLMENT_USER);
-            String password = getProperty(p, ENROLMENT_PWD);
-            String ddlFile = getProperty(p, DDL_FILE);
+        if(getProperty(applicationProperties, ENROLMENT_SERVICE).equals(MYSQL_SERVICE)) {
+            String url = getProperty(applicationProperties, ENROLMENT_URL);
+            String user = getProperty(applicationProperties, ENROLMENT_USER);
+            String password = getProperty(applicationProperties, ENROLMENT_PWD);
+            String ddlFile = getProperty(applicationProperties, DDL_FILE);
             return MySqlEnrolmentService.create(url, user, password, ddlFile);
         }
         throw new EnrolmentException("No enrolment service configured", null);

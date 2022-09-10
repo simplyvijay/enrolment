@@ -11,10 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Optional;
 
 public final class MySqlEnrolmentService implements EnrolmentService {
@@ -28,18 +25,19 @@ public final class MySqlEnrolmentService implements EnrolmentService {
     private static final String DELETE_STUDENT = "DELETE FROM STUDENT WHERE email = ?";
     private final String url;
     private final String user;
-    private final String password;
+    private final String pwd;
+    private Connection connection;
 
-    private MySqlEnrolmentService(String url, String user, String password) {
+    private MySqlEnrolmentService(String url, String user, String pwd) {
         this.url = url;
         this.user = user;
-        this.password = password;
+        this.pwd = pwd;
     }
 
     @Override
     public CourseList getCourseList() throws EnrolmentException {
-        try (Connection connection = DriverManager.getConnection(url, user, password);
-             Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery(GET_COURSES)) {
+        try (var statement = getConnection().createStatement();
+             var resultSet = statement.executeQuery(GET_COURSES)) {
             CourseList list = new CourseList();
             while (resultSet.next()) {
                 list.add(resultSet.getInt(1), resultSet.getString(2));
@@ -52,9 +50,8 @@ public final class MySqlEnrolmentService implements EnrolmentService {
 
     @Override
     public EnrolmentStatus add(Student student) throws EnrolmentException {
-        try(var connection = DriverManager.getConnection(url, user, password);
-            var statement1 = connection.prepareStatement(SELECT_STUDENT);
-            var statement2 = connection.prepareStatement(INSERT_STUDENT)) {
+        try(var statement1 = getConnection().prepareStatement(SELECT_STUDENT);
+            var statement2 = getConnection().prepareStatement(INSERT_STUDENT)) {
 
             statement1.setString(1, student.getEmail());
 
@@ -79,8 +76,7 @@ public final class MySqlEnrolmentService implements EnrolmentService {
 
     @Override
     public Optional<Student> fetch(String email) throws EnrolmentException {
-        try(var connection = DriverManager.getConnection(url, user, password);
-            var statement = connection.prepareStatement(VIEW_STUDENT)) {
+        try(var statement = getConnection().prepareStatement(VIEW_STUDENT)) {
             statement.setString(1, email);
             try(var resultSet = statement.executeQuery()) {
                 if(resultSet.next()) {
@@ -104,8 +100,7 @@ public final class MySqlEnrolmentService implements EnrolmentService {
 
     @Override
     public EnrolmentStatus update(Student student) throws EnrolmentException {
-        try(var connection = DriverManager.getConnection(url, user, password);
-            var statement = connection.prepareStatement(UPDATE_STUDENT)) {
+        try(var statement = getConnection().prepareStatement(UPDATE_STUDENT)) {
             statement.setInt(1, student.getCourseId());
             statement.setString(2, student.getEmail());
             return (statement.executeUpdate() == 0)? EnrolmentStatus.NOT_EXISTS : EnrolmentStatus.SUCCESS;
@@ -116,8 +111,7 @@ public final class MySqlEnrolmentService implements EnrolmentService {
 
     @Override
     public EnrolmentStatus delete(String email) throws EnrolmentException {
-        try(Connection connection = DriverManager.getConnection(url, user, password);
-            PreparedStatement statement = connection.prepareStatement(DELETE_STUDENT)) {
+        try(var statement = getConnection().prepareStatement(DELETE_STUDENT)) {
             statement.setString(1, email);
             return (statement.executeUpdate() == 0)? EnrolmentStatus.NOT_EXISTS : EnrolmentStatus.SUCCESS;
         } catch (SQLException e) {
@@ -125,11 +119,18 @@ public final class MySqlEnrolmentService implements EnrolmentService {
         }
     }
 
+    private Connection getConnection() throws SQLException {
+        if(connection == null || connection.isClosed()) {
+            connection = DriverManager.getConnection(url, user, pwd);
+        }
+        return connection;
+    }
+
     public static EnrolmentService create(String url, String user, String pwd, String ddlFile) throws EnrolmentException {
         try {
             try(var connection = DriverManager.getConnection(url, user, pwd);
-                var is = EnrolmentService.class.getClassLoader().getResourceAsStream(ddlFile);
-                var reader = new InputStreamReader(is)) {
+                var inputStream = EnrolmentService.class.getClassLoader().getResourceAsStream(ddlFile);
+                var reader = new InputStreamReader(inputStream)) {
                 ScriptRunner runner = new ScriptRunner(connection);
                 runner.setLogWriter(null);
                 runner.runScript(reader);
