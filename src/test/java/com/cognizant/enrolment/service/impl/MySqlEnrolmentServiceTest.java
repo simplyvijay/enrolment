@@ -1,8 +1,8 @@
 package com.cognizant.enrolment.service.impl;
 
-import com.cognizant.enrolment.model.EnrolmentException;
 import com.cognizant.enrolment.model.Student;
 import com.cognizant.enrolment.service.EnrolmentService;
+import com.cognizant.enrolment.service.EnrolmentStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -10,9 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import static com.cognizant.enrolment.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -34,61 +35,59 @@ public class MySqlEnrolmentServiceTest {
     @Test
     @Order(2)
     void addAndView() {
-        Student student1 = new Student("example@abc.com", "John", "Trovolta", "12/11/2002", "NY", 1001);
-        assertDoesNotThrow(() -> service.add(student1));
-        Student student2 = assertDoesNotThrow(() -> service.view("example@abc.com"));
-        assertEquals("example@abc.com", student2.getEmail());
-        assertEquals("John", student2.getFirstName());
-        assertEquals("Trovolta", student2.getLastName());
-        assertEquals("12/11/2002", student2.getDob());
-        assertEquals("NY", student2.getLocation());
-        assertEquals(1001, student2.getCourseId());
-        assertEquals("Cloud", student2.getCourseName());
+        assertEquals(EnrolmentStatus.SUCCESS, assertDoesNotThrow(() -> service.add(SAMPLE_STUDENT)));
+        var optStudent = assertDoesNotThrow(() -> service.fetch(SAMPLE_STUDENT.getEmail()));
+        assertTrue(optStudent.isPresent());
+        var student2 = optStudent.get();
+        assertEquals(SAMPLE_STUDENT.getEmail(), student2.getEmail());
+        assertEquals(SAMPLE_STUDENT.getFirstName(), student2.getFirstName());
+        assertEquals(SAMPLE_STUDENT.getLastName(), student2.getLastName());
+        assertEquals(SAMPLE_STUDENT.getDob(), student2.getDob());
+        assertEquals(SAMPLE_STUDENT.getLocation(), student2.getLocation());
+        assertEquals(SAMPLE_STUDENT.getCourseId(), student2.getCourseId());
+        assertEquals(SAMPLE_COURSE_NAME1, student2.getCourseName());
     }
 
     @Test
     @Order(3)
-    void addError() {
-        Student student = new Student("example@abc.com", "John", "Trovolta", "12/11/2002", "NY", 1001);
-        var ex = assertThrows(EnrolmentException.class, () -> service.add(student));
-        assertEquals("Student with the given email already exists", ex.getMessage());
+    void addExists() {
+        assertEquals(EnrolmentStatus.EXISTS, assertDoesNotThrow(() -> service.add(SAMPLE_STUDENT)));
     }
     
     @Test
     @Order(4)
     void updateAndView() {
-        Student student1 = new Student("example@abc.com", "John", "Trovolta", "12/11/2002", "NY", 1002);
-        assertDoesNotThrow(() -> service.update(student1));
-        Student student2 = assertDoesNotThrow(() -> service.view("example@abc.com"));
-        assertEquals("example@abc.com", student2.getEmail());
-        assertEquals("John", student2.getFirstName());
-        assertEquals("Trovolta", student2.getLastName());
-        assertEquals("12/11/2002", student2.getDob());
-        assertEquals("NY", student2.getLocation());
-        assertEquals(1002, student2.getCourseId());
-        assertEquals("Java", student2.getCourseName());
+        Student student1 = new Student(SAMPLE_EMAIL1, SAMPLE_FIRST_NAME, SAMPLE_LAST_NAME, SAMPLE_DOB, SAMPLE_LOCATION, SAMPLE_COURSE_ID2);
+        assertEquals(EnrolmentStatus.SUCCESS, assertDoesNotThrow(() -> service.update(student1)));
+        var optStudent = assertDoesNotThrow(() -> service.fetch(student1.getEmail()));
+        assertTrue(optStudent.isPresent());
+        var student2 = optStudent.get();
+        assertEquals(student1.getEmail(), student2.getEmail());
+        assertEquals(student1.getFirstName(), student2.getFirstName());
+        assertEquals(student1.getLastName(), student2.getLastName());
+        assertEquals(student1.getDob(), student2.getDob());
+        assertEquals(student1.getLocation(), student2.getLocation());
+        assertEquals(student1.getCourseId(), student2.getCourseId());
+        assertEquals(SAMPLE_COURSE_NAME2, student2.getCourseName());
     }
 
     @Test
     @Order(5)
-    void updateError() {
-        Student student = new Student("example1@abc.com", "John", "Trovolta", "12/11/2002", "NY", 1002);
-        var ex = assertThrows(EnrolmentException.class, () -> service.update(student));
-        assertEquals("No enrolment exist for the given email: example1@abc.com", ex.getMessage());
+    void updateNotExists() {
+        Student student = new Student(SAMPLE_EMAIL2, SAMPLE_FIRST_NAME, SAMPLE_LAST_NAME, SAMPLE_DOB, SAMPLE_LOCATION, SAMPLE_COURSE_ID2);
+        assertEquals(EnrolmentStatus.NOT_EXISTS, assertDoesNotThrow(() -> service.update(student)));
     }
 
     @Test
     @Order(6)
     void deleteAndView() {
-        assertDoesNotThrow(() -> service.delete("example@abc.com"));
-        var ex = assertThrows(EnrolmentException.class, () -> service.view("example@abc.com"));
-        assertEquals("No enrolment exist for the given email: example@abc.com", ex.getMessage());
+        assertEquals(EnrolmentStatus.SUCCESS, assertDoesNotThrow(() -> service.delete(SAMPLE_EMAIL1)));
+        assertTrue(assertDoesNotThrow(() -> service.fetch(SAMPLE_EMAIL1)).isEmpty());
     }
 
     @Test
     @Order(7)
-    void deleteError() {
-        var ex = assertThrows(EnrolmentException.class, () -> service.delete("example@abc.com"));
-        assertEquals("No enrolment exist for the given email: example@abc.com", ex.getMessage());
+    void deleteNotExists() {
+        assertEquals(EnrolmentStatus.NOT_EXISTS, assertDoesNotThrow(() -> service.delete(SAMPLE_EMAIL1)));
     }
 }

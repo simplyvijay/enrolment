@@ -1,9 +1,9 @@
 package com.cognizant.enrolment.application;
 
 import com.cognizant.enrolment.model.CourseList;
-import com.cognizant.enrolment.model.EnrolmentException;
 import com.cognizant.enrolment.model.Student;
 import com.cognizant.enrolment.service.EnrolmentService;
+import com.cognizant.enrolment.service.EnrolmentStatus;
 import com.cognizant.enrolment.service.impl.MySqlEnrolmentService;
 
 import java.io.InputStream;
@@ -13,104 +13,144 @@ import java.util.Scanner;
 
 public class EnrolmentApplication {
 
+    public static final String ENROLMENT_WELCOME_MESSAGE = "Welcome to Enrolment Service";
+    public static final String ENROLMENT_OPTIONS = "\n1. Course Enrolment\n2. View Enrolment\n3. Update Enrolment\n4. Delete Enrolment\n5. Exit\nEnter Option: ";
+    public static final String ENTER_COURSE = "Enter course id: ";
+    public static final String NOT_VALID_COURSE = "Not a valid course id";
+    public static final String ENTER_FIRST_NAME = "Enter First Name: ";
+    public static final String ENTER_LAST_NAME = "Enter Last Name: ";
+    public static final String ENTER_DOB = "Enter DOB (DD/MM/YYYY): ";
+    public static final String NOT_VALID_DOB = "Date of birth should be valid with format DD/MM/YYYY";
+    public static final String ENTER_EMAIL = "Enter Email id: ";
+    public static final String ENTER_LOCATION = "Enter Location: ";
+    public static final String ENROLMENT_CONFIRMATION = "Your enrolment is confirmed";
+    public static final String UPDATE_CONFIRMATION = "Your enrolment is updated";
+    public static final String DELETE_CONFIRMATION = "Your enrolment is removed";
+    public static final String NO_UPDATE_REQUIRED = "No update required";
+    public static final String ENROLMENT_DETAILS_PREFIX = "My enrolment details - ";
+    public static final String AVAILABLE_COURSES = "Available courses:";
+    public static final String INVALID_INPUT = "Invalid input, Enter again: ";
+    public static final String NO_ENROLMENT_EXISTS = "No enrolment exist for the given email: ";
+    public static final String STUDENT_EXISTS = "Student with the given email already exists";
     private EnrolmentService enrolmentService;
     private CourseList courseList;
+    private Scanner scanner;
+    private PrintStream out;
 
     public void start(InputStream in, PrintStream out) {
-        out.println("Welcome to Enrolment service");
         try {
+            scanner = new Scanner(in);
+            this.out = out;
+            println(ENROLMENT_WELCOME_MESSAGE);
             if(enrolmentService == null) {
                 enrolmentService = MySqlEnrolmentService.create();
             }
-        } catch (EnrolmentException e) {
-            out.println(e.getMessage());
-            return;
-        }
-        boolean iterate = true;
-        Scanner scanner = new Scanner(in);
-        while(iterate) {
-            try {
-                out.print("\n1. Course Enrolment\n2. View Enrolment\n3. Update Enrolment\n4. Delete Enrolment\n5. Exit\nEnter Option: ");
-                switch (nextInt(scanner)) {
-                    case 1 -> {
-                        out.println(getCourseList());
-                        int courseId;
-                        while(true) {
-                            out.print("Enter course id: ");
-                            courseId = nextInt(scanner);
-                            if(courseList.contains(courseId)) break;
-                            out.println("Not a valid course id");
-                        }
-                        out.print("Enter First Name: ");
-                        String firstName = scanner.nextLine();
-                        out.print("Enter Last Name: ");
-                        String lastName = scanner.nextLine();
-                        String dob;
-                        while(true) {
-                            out.print("Enter DOB (DD/MM/YYYY): ");
-                            dob = scanner.nextLine();
-                            if(Student.isValidDob(dob)) break;
-                            out.println("Date of birth should be valid with format DD/MM/YYYY");
-                        }
-                        out.print("Enter Email id: ");
-                        String email = scanner.nextLine();
-                        out.print("Enter Location: ");
-                        String location = scanner.nextLine();
-                        enrolmentService.add(new Student(email, firstName, lastName, dob, location, courseId));
-                        out.println("\nYour enrolment is confirmed");
-                    }
-                    case 2 -> {
-                        out.print("Enter email id: ");
-                        out.println("\nMy enrolment details - " + enrolmentService.view(scanner.nextLine()));
-                    }
-                    case 3 -> {
-                        out.print("Enter email id: ");
-                        String email = scanner.nextLine();
-                        Student student = enrolmentService.view(email);
-                        out.println("\nMy enrolment details - " + student);
-                        out.println("\nAvailable courses:");
-                        out.println(getCourseList());
-                        int courseId;
-                        while(true) {
-                            out.print("Enter course id: ");
-                            courseId = nextInt(scanner);
-                            if(courseList.contains(courseId)) break;
-                            out.println("Not a valid course id");
-                        }
-                        if(!Objects.equals(student.getCourseId(), courseId)) {
-                            student.setCourseId(courseId);
-                            enrolmentService.update(student);
-                            out.println("\nYour enrolment is updated");
-                        } else {
-                            out.println("\nNo update required");
-                        }
-                    }
-                    case 4 -> {
-                        out.print("Enter email id: ");
-                        enrolmentService.delete(scanner.nextLine());
-                        out.println("\nYour enrolment is removed");
-                    }
+            boolean iterate = true;
+            while(iterate) {
+                out.print(ENROLMENT_OPTIONS);
+                switch (nextInt()) {
+                    case 1 -> enrol();
+                    case 2 -> view();
+                    case 3 -> update();
+                    case 4 -> delete();
                     default -> iterate = false;
                 }
-            } catch (EnrolmentException e) {
-                out.println("\n" + e.getMessage());
             }
-        }
-    }
-    
-    private int nextInt(Scanner scanner) throws EnrolmentException {
-        String str = scanner.nextLine();
-        try {
-            return Integer.parseInt(str);
-        } catch (NumberFormatException ex) {
-            throw new EnrolmentException("Invalid input");
+        } catch (Exception e) {
+            out.println("Exception occurred with the enrolment process: " + e.getMessage());
         }
     }
 
-    private CourseList getCourseList() throws EnrolmentException {
+    private void enrol() throws Exception {
+        println(AVAILABLE_COURSES);
+        out.println(getCourseList());
+        int courseId = getCourseId();
+        out.print(ENTER_FIRST_NAME);
+        String firstName = scanner.nextLine();
+        out.print(ENTER_LAST_NAME);
+        String lastName = scanner.nextLine();
+        String dob;
+        while(true) {
+            out.print(ENTER_DOB);
+            dob = scanner.nextLine();
+            if(Student.isValidDob(dob)) break;
+            out.println(NOT_VALID_DOB);
+        }
+        out.print(ENTER_EMAIL);
+        String email = scanner.nextLine();
+        out.print(ENTER_LOCATION);
+        String location = scanner.nextLine();
+        var status = enrolmentService.add(new Student(email, firstName, lastName, dob, location, courseId));
+        println(status.equals(EnrolmentStatus.SUCCESS)? ENROLMENT_CONFIRMATION : STUDENT_EXISTS);
+    }
+
+    private void view() throws Exception {
+        out.print(ENTER_EMAIL);
+        var email = scanner.nextLine();
+        println(enrolmentService.fetch(email).map(EnrolmentApplication::getEnrolmentDetails).orElseGet(() -> NO_ENROLMENT_EXISTS + email));
+    }
+
+    private void update() throws Exception {
+        out.print(ENTER_EMAIL);
+        String email = scanner.nextLine();
+        var optStudent = enrolmentService.fetch(email);
+        if(optStudent.isEmpty()) {
+            println(NO_ENROLMENT_EXISTS + email);
+            return;
+        }
+        var student = optStudent.get();
+        println(getEnrolmentDetails(student));
+        println(AVAILABLE_COURSES);
+        out.println(getCourseList());
+        int courseId = getCourseId();
+        if(!Objects.equals(student.getCourseId(), courseId)) {
+            student.setCourseId(courseId);
+            enrolmentService.update(student);
+            println(UPDATE_CONFIRMATION);
+        } else {
+            println(NO_UPDATE_REQUIRED);
+        }
+    }
+
+    private void delete() throws Exception {
+        out.print(ENTER_EMAIL);
+        var email = scanner.nextLine();
+        var status = enrolmentService.delete(email);
+        println(status.equals(EnrolmentStatus.SUCCESS)? DELETE_CONFIRMATION : NO_ENROLMENT_EXISTS + email);
+    }
+
+    public static String getEnrolmentDetails(Student student) {
+        return ENROLMENT_DETAILS_PREFIX + student;
+    }
+
+    private int getCourseId() throws Exception {
+        while(true) {
+            out.print(ENTER_COURSE);
+            int courseId = nextInt();
+            if(getCourseList().contains(courseId)) return courseId;
+            out.println(NOT_VALID_COURSE);
+        }
+    }
+
+    private int nextInt() {
+        while(true) {
+            String str = scanner.nextLine();
+            try {
+                return Integer.parseInt(str);
+            } catch (NumberFormatException ex) {
+                out.print(INVALID_INPUT);
+            }
+        }
+    }
+
+    private CourseList getCourseList() throws Exception {
         if(courseList == null) {
             courseList = enrolmentService.getCourseList();
         }
         return courseList;
+    }
+
+    private void println(String message) {
+        out.println("\n" + message);
     }
 }

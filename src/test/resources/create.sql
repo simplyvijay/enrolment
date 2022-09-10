@@ -2,8 +2,8 @@ drop table if exists STUDENT;
 drop table if exists COURSE;
 
 create table COURSE (
-    id int not null ,
-    name varchar(30) not null ,
+    id int not null,
+    name varchar(30) not null,
     primary key (id)
 ) engine=INNODB;
 
@@ -18,4 +18,4 @@ create table STUDENT (
     primary key (email)
 ) engine=INNODB;
 
-insert into COURSE values (1001, 'Cloud'), (1002, 'Java'), (1003, '.Net'), (1004, 'ReactJS'), (1005, 'Python');
+insert into COURSE (id, name) values (1001, 'Cloud'), (1002, 'Java'), (1003, '.Net'), (1004, 'ReactJS'), (1005, 'Python');

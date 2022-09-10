@@ -1,13 +1,14 @@
 package com.cognizant.enrolment.service;
 
 import com.cognizant.enrolment.model.CourseList;
-import com.cognizant.enrolment.model.EnrolmentException;
 import com.cognizant.enrolment.model.Student;
 
+import java.util.Optional;
+
 public interface EnrolmentService {
-    CourseList getCourseList() throws EnrolmentException;
-    void add(Student student) throws EnrolmentException;
-    Student view(String email) throws EnrolmentException;
-    void update(Student student) throws EnrolmentException;
-    void delete(String email) throws EnrolmentException;
+    CourseList getCourseList() throws Exception;
+    EnrolmentStatus add(Student student) throws Exception;
+    Optional<Student> fetch(String email) throws Exception;
+    EnrolmentStatus update(Student student) throws Exception;
+    EnrolmentStatus delete(String email) throws Exception;
 }

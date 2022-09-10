@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
+import static com.cognizant.enrolment.Constants.*;
+import static com.cognizant.enrolment.application.EnrolmentApplication.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -32,35 +34,35 @@ public class EnrolmentApplicationTest {
     void enrol() {
         String input = Input.create()
                 .next(1)
-                .next(1001)
-                .next("John")
-                .next("Travolta")
-                .next("12/11/2002")
-                .next("example@abc.com")
-                .next("NY")
+                .next(SAMPLE_COURSE_ID1)
+                .next(SAMPLE_FIRST_NAME)
+                .next(SAMPLE_LAST_NAME)
+                .next(SAMPLE_DOB)
+                .next(SAMPLE_EMAIL1)
+                .next(SAMPLE_LOCATION)
                 .next(5)
                 .toString();
         String output = run(input);
-        assertTrue(output.contains("Your enrolment is confirmed"));
+        assertTrue(output.contains(ENROLMENT_CONFIRMATION));
 
         input = Input.create()
                 .next("ab")
                 .next(1)
                 .next(1010)
-                .next(1001)
-                .next("John")
-                .next("Travolta")
+                .next(SAMPLE_COURSE_ID1)
+                .next(SAMPLE_FIRST_NAME)
+                .next(SAMPLE_LAST_NAME)
                 .next("12-33-2002")
-                .next("12/11/2002")
-                .next("example@abc.com")
-                .next("NY")
+                .next(SAMPLE_DOB)
+                .next(SAMPLE_EMAIL1)
+                .next(SAMPLE_LOCATION)
                 .next(5)
                 .toString();
         output = run(input);
-        assertTrue(output.contains("Invalid input"));
-        assertTrue(output.contains("Not a valid course id"));
-        assertTrue(output.contains("Date of birth should be valid with format DD/MM/YYYY"));
-        assertTrue(output.contains("Student with the given email already exists"));
+        assertTrue(output.contains(INVALID_INPUT));
+        assertTrue(output.contains(NOT_VALID_COURSE));
+        assertTrue(output.contains(NOT_VALID_DOB));
+        assertTrue(output.contains(STUDENT_EXISTS));
     }
 
     @Test
@@ -68,12 +70,11 @@ public class EnrolmentApplicationTest {
     void view() {
         String input = Input.create()
                 .next(2)
-                .next("example@abc.com")
+                .next(SAMPLE_EMAIL1)
                 .next(5)
                 .toString();
         String output = run(input);
-        assertTrue(output.contains("My enrolment details - " +
-                new Student("example@abc.com", "John", "Travolta", "12/11/2002", "NY", 1001, "Cloud")));
+        assertTrue(output.contains(getEnrolmentDetails(SAMPLE_STUDENT)));
     }
 
     @Test
@@ -81,34 +82,34 @@ public class EnrolmentApplicationTest {
     void update() {
         String input = Input.create()
                 .next(3)
-                .next("example@abc.com")
-                .next(1002)
+                .next(SAMPLE_EMAIL1)
+                .next(SAMPLE_COURSE_ID2)
                 .next(5)
                 .toString();
         String output = run(input);
-        assertTrue(output.contains("Your enrolment is updated"));
+        assertTrue(output.contains(UPDATE_CONFIRMATION));
 
         input = Input.create()
                 .next(2)
-                .next("example@abc.com")
+                .next(SAMPLE_EMAIL1)
                 .next(5)
                 .toString();
         output = run(input);
-        assertTrue(output.contains("My enrolment details - " +
-                new Student("example@abc.com", "John", "Travolta", "12/11/2002", "NY", 1002, "Java")));
+        assertTrue(output.contains(getEnrolmentDetails(
+                new Student(SAMPLE_EMAIL1, SAMPLE_FIRST_NAME, SAMPLE_LAST_NAME, SAMPLE_DOB, SAMPLE_LOCATION, SAMPLE_COURSE_ID2, SAMPLE_COURSE_NAME2))));
 
         input = Input.create()
                 .next(3)
-                .next("example1@abc.com")
+                .next(SAMPLE_EMAIL2)
                 .next(3)
-                .next("example@abc.com")
+                .next(SAMPLE_EMAIL1)
                 .next(1010)
-                .next(1002)
+                .next(SAMPLE_COURSE_ID2)
                 .next(5)
                 .toString();
         output = run(input);
-        assertTrue(output.contains("No enrolment exist for the given email: example1@abc.com"));
-        assertTrue(output.contains("Not a valid course id") && output.contains("No update required"));
+        assertTrue(output.contains(NO_ENROLMENT_EXISTS + SAMPLE_EMAIL2));
+        assertTrue(output.contains(NOT_VALID_COURSE) && output.contains(NO_UPDATE_REQUIRED));
     }
 
     @Test
@@ -116,13 +117,13 @@ public class EnrolmentApplicationTest {
     void delete() {
         String input = Input.create()
                 .next(4)
-                .next("example@abc.com")
+                .next(SAMPLE_EMAIL1)
                 .next(5)
                 .toString();
         String output = run(input);
-        assertTrue(output.contains("Your enrolment is removed"));
+        assertTrue(output.contains(DELETE_CONFIRMATION));
         output = run(input);
-        assertTrue(output.contains("No enrolment exist for the given email: example@abc.com"));
+        assertTrue(output.contains(NO_ENROLMENT_EXISTS + SAMPLE_EMAIL1));
     }
 
     private String run(String input) {
@@ -139,24 +140,24 @@ public class EnrolmentApplicationTest {
     }
 
     private static class Input {
-        private final StringBuilder input;
+        private final StringBuilder buffer;
         private Input() {
-            input = new StringBuilder();
+            buffer = new StringBuilder();
         }
         public static Input create() {
             return new Input();
         }
         public Input next(String n) {
-            input.append(n).append(System.lineSeparator());
+            buffer.append(n).append(System.lineSeparator());
             return this;
         }
         public Input next(int n) {
-            input.append(n).append(System.lineSeparator());
+            buffer.append(n).append(System.lineSeparator());
             return this;
         }
         @Override
         public String toString() {
-            return input.toString();
+            return buffer.toString();
         }
     }
 }

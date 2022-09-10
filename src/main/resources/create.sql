@@ -1,6 +1,6 @@
 create table if not exists COURSE (
-    id int not null ,
-    name varchar(30) not null ,
+    id int not null,
+    name varchar(30) not null,
     primary key (id)
 ) engine=INNODB;
 
@@ -15,4 +15,4 @@ create table if not exists STUDENT (
     primary key (email)
 ) engine=INNODB;
 
-insert ignore into COURSE values (1001, 'Cloud'), (1002, 'Java'), (1003, '.Net'), (1004, 'ReactJS'), (1005, 'Python');
+insert ignore into COURSE (id, name) values (1001, 'Cloud'), (1002, 'Java'), (1003, '.Net'), (1004, 'ReactJS'), (1005, 'Python');

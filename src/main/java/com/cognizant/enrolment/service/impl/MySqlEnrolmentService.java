@@ -1,9 +1,9 @@
 package com.cognizant.enrolment.service.impl;
 
 import com.cognizant.enrolment.model.CourseList;
-import com.cognizant.enrolment.model.EnrolmentException;
 import com.cognizant.enrolment.model.Student;
 import com.cognizant.enrolment.service.EnrolmentService;
+import com.cognizant.enrolment.service.EnrolmentStatus;
 import org.apache.ibatis.jdbc.ScriptRunner;
 
 import java.io.IOException;
@@ -13,8 +13,10 @@ import java.io.Reader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Optional;
 import java.util.Properties;
 
 public class MySqlEnrolmentService implements EnrolmentService {
@@ -26,7 +28,7 @@ public class MySqlEnrolmentService implements EnrolmentService {
     private static final String DDL_FILE = "create.sql";
     private static final String PROPERTIES_FILE = "application.properties";
     private static final String GET_COURSES = "SELECT * FROM COURSE";
-    private static final String INSERT_STUDENT = "INSERT INTO STUDENT VALUES (?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_STUDENT = "INSERT INTO STUDENT (email, first_name, last_name, dob, location, course_id) VALUES (?, ?, ?, ?, ?, ?)";
 
     private static final String SELECT_STUDENT = "SELECT email FROM STUDENT WHERE email = ? LIMIT 1";
     private static final String VIEW_STUDENT = "SELECT s.*, c.name FROM STUDENT s INNER JOIN COURSE c ON s.course_id = c.id WHERE s.email = ?";
@@ -43,50 +45,54 @@ public class MySqlEnrolmentService implements EnrolmentService {
     }
 
     @Override
-    public CourseList getCourseList() throws EnrolmentException {
-        try(Connection connection = DriverManager.getConnection(url, user, password)) {
-            Statement statement = connection.createStatement();
-            var resultSet = statement.executeQuery(GET_COURSES);
+    public CourseList getCourseList() throws SQLException {
+        try (Connection connection = DriverManager.getConnection(url, user, password);
+             Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery(GET_COURSES)) {
             CourseList list = new CourseList();
-            while(resultSet.next()) {
+            while (resultSet.next()) {
                 list.add(resultSet.getInt(1), resultSet.getString(2));
             }
             return list;
-        } catch (SQLException e) {
-            throw new EnrolmentException("Exception while getting course list: " + e.getErrorCode());
         }
     }
 
     @Override
-    public void add(Student student) throws EnrolmentException {
-        try(Connection connection = DriverManager.getConnection(url, user, password)) {
-            PreparedStatement statement = connection.prepareStatement(SELECT_STUDENT);
-            statement.setString(1, student.getEmail());
-            if(statement.executeQuery().next()) {
-                throw new EnrolmentException("Student with the given email already exists");
+    public EnrolmentStatus add(Student student) throws SQLException {
+        ResultSet resultSet = null;
+        try(Connection connection = DriverManager.getConnection(url, user, password);
+            PreparedStatement statement1 = connection.prepareStatement(SELECT_STUDENT);
+            PreparedStatement statement2 = connection.prepareStatement(INSERT_STUDENT)) {
+
+            statement1.setString(1, student.getEmail());
+            resultSet = statement1.executeQuery();
+            if(resultSet.next()) {
+                return EnrolmentStatus.EXISTS;
             }
 
-            statement = connection.prepareStatement(INSERT_STUDENT);
-            statement.setString(1, student.getEmail());
-            statement.setString(2, student.getFirstName());
-            statement.setString(3, student.getLastName());
-            statement.setString(4, student.getDob());
-            statement.setString(5, student.getLocation());
-            statement.setInt(6, student.getCourseId());
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            throw new EnrolmentException("Exception while inserting student: " + e.getErrorCode() + " Message: " + e.getMessage());
+            statement2.setString(1, student.getEmail());
+            statement2.setString(2, student.getFirstName());
+            statement2.setString(3, student.getLastName());
+            statement2.setString(4, student.getDob());
+            statement2.setString(5, student.getLocation());
+            statement2.setInt(6, student.getCourseId());
+            statement2.executeUpdate();
+            return EnrolmentStatus.SUCCESS;
+        } finally {
+            if(resultSet != null) {
+                resultSet.close();
+            }
         }
     }
 
     @Override
-    public Student view(String email) throws EnrolmentException {
-        try(Connection connection = DriverManager.getConnection(url, user, password)) {
-            PreparedStatement statement = connection.prepareStatement(VIEW_STUDENT);
+    public Optional<Student> fetch(String email) throws SQLException {
+        ResultSet resultSet = null;
+        try(Connection connection = DriverManager.getConnection(url, user, password);
+            PreparedStatement statement = connection.prepareStatement(VIEW_STUDENT)) {
             statement.setString(1, email);
-            var resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             if(resultSet.next()) {
-                return new Student(
+                return Optional.of(new Student(
                         resultSet.getString(1),
                         resultSet.getString(2),
                         resultSet.getString(3),
@@ -94,43 +100,37 @@ public class MySqlEnrolmentService implements EnrolmentService {
                         resultSet.getString(5),
                         resultSet.getInt(6),
                         resultSet.getString(7)
-                );
+                ));
             } else {
-                throw new EnrolmentException("No enrolment exist for the given email: " + email);
+                return Optional.empty();
             }
-        } catch (SQLException e) {
-            throw new EnrolmentException("Exception while fetching student: " + e.getErrorCode());
+        } finally {
+            if(resultSet != null) {
+                resultSet.close();
+            }
         }
     }
 
     @Override
-    public void update(Student student) throws EnrolmentException {
-        try(Connection connection = DriverManager.getConnection(url, user, password)) {
-            PreparedStatement statement = connection.prepareStatement(UPDATE_STUDENT);
+    public EnrolmentStatus update(Student student) throws SQLException {
+        try(Connection connection = DriverManager.getConnection(url, user, password);
+            PreparedStatement statement = connection.prepareStatement(UPDATE_STUDENT)) {
             statement.setInt(1, student.getCourseId());
             statement.setString(2, student.getEmail());
-            if(statement.executeUpdate() == 0) {
-                throw new EnrolmentException("No enrolment exist for the given email: " + student.getEmail());
-            }
-        } catch (SQLException e) {
-            throw new EnrolmentException("Exception while updating student: " + e.getErrorCode());
+            return (statement.executeUpdate() == 0)? EnrolmentStatus.NOT_EXISTS : EnrolmentStatus.SUCCESS;
         }
     }
 
     @Override
-    public void delete(String email) throws EnrolmentException {
-        try(Connection connection = DriverManager.getConnection(url, user, password)) {
-            PreparedStatement statement = connection.prepareStatement(DELETE_STUDENT);
+    public EnrolmentStatus delete(String email) throws SQLException {
+        try(Connection connection = DriverManager.getConnection(url, user, password);
+            PreparedStatement statement = connection.prepareStatement(DELETE_STUDENT)) {
             statement.setString(1, email);
-            if(statement.executeUpdate() == 0) {
-                throw new EnrolmentException("No enrolment exist for the given email: " + email);
-            }
-        } catch (SQLException e) {
-            throw new EnrolmentException("Exception while deleting student: " + e.getErrorCode());
+            return (statement.executeUpdate() == 0)? EnrolmentStatus.NOT_EXISTS : EnrolmentStatus.SUCCESS;
         }
     }
 
-    public static EnrolmentService create() throws EnrolmentException {
+    public static EnrolmentService create() throws IOException, SQLException {
         var p = getProperties();
         String url = getProperty(p, ENROLMENT_URL);
         String user = getProperty(p, ENROLMENT_USER);
@@ -142,18 +142,14 @@ public class MySqlEnrolmentService implements EnrolmentService {
             runner.setLogWriter(null);
             runner.runScript(iReader);
             return new MySqlEnrolmentService(url, user, password);
-        } catch (SQLException | IOException e) {
-            throw new EnrolmentException("Exception during creating EnrolmentService: " + e.getMessage());
         }
     }
 
-    private static Properties getProperties() throws EnrolmentException {
+    private static Properties getProperties() throws IOException {
         try(InputStream is = EnrolmentService.class.getClassLoader().getResourceAsStream(PROPERTIES_FILE)) {
             var p = new Properties();
             p.load(is);
             return p;
-        } catch (IOException e) {
-            throw new EnrolmentException("Cannot read properties file: " + PROPERTIES_FILE);
         }
     }
 
