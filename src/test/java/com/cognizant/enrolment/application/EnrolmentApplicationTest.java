@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class EnrolmentApplicationTest {
+class EnrolmentApplicationTest {
     EnrolmentApplication application;
 
     @BeforeAll

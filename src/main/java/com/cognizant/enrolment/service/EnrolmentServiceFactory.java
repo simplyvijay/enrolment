@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class EnrolmentServiceFactory {
+public final class EnrolmentServiceFactory {
 
     private static final String PROPERTIES_FILE = "application.properties";
     private static final String ENROLMENT_URL = "enrolment_url";
@@ -16,6 +16,8 @@ public class EnrolmentServiceFactory {
     private static final String MYSQL_SERVICE = "mysql";
     private static final String DDL_FILE = "ddl_file";
 
+    private EnrolmentServiceFactory() {
+    }
 
     public static EnrolmentService getService() throws EnrolmentException {
         Properties p;

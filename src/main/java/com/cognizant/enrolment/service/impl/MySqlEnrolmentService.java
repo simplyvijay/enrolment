@@ -17,7 +17,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
 
-public class MySqlEnrolmentService implements EnrolmentService {
+public final class MySqlEnrolmentService implements EnrolmentService {
 
     private static final String GET_COURSES = "SELECT * FROM COURSE";
     private static final String INSERT_STUDENT = "INSERT INTO STUDENT (email, first_name, last_name, dob, location, course_id) VALUES (?, ?, ?, ?, ?, ?)";

@@ -2,7 +2,7 @@ package com.cognizant.enrolment;
 
 import com.cognizant.enrolment.model.Student;
 
-public class Constants {
+public final class Constants {
     private Constants() {
     }
 

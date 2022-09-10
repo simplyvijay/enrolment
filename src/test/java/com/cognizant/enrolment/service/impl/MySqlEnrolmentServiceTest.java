@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class MySqlEnrolmentServiceTest {
+class MySqlEnrolmentServiceTest {
     EnrolmentService service;
 
     @BeforeAll
