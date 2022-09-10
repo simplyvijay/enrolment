@@ -6,9 +6,9 @@ import com.cognizant.enrolment.model.Student;
 import java.util.Optional;
 
 public interface EnrolmentService {
-    CourseList getCourseList() throws Exception;
-    EnrolmentStatus add(Student student) throws Exception;
-    Optional<Student> fetch(String email) throws Exception;
-    EnrolmentStatus update(Student student) throws Exception;
-    EnrolmentStatus delete(String email) throws Exception;
+    CourseList getCourseList() throws EnrolmentException;
+    EnrolmentStatus add(Student student) throws EnrolmentException;
+    Optional<Student> fetch(String email) throws EnrolmentException;
+    EnrolmentStatus update(Student student) throws EnrolmentException;
+    EnrolmentStatus delete(String email) throws EnrolmentException;
 }

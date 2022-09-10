@@ -2,6 +2,7 @@ package com.cognizant.enrolment.service.impl;
 
 import com.cognizant.enrolment.model.Student;
 import com.cognizant.enrolment.service.EnrolmentService;
+import com.cognizant.enrolment.service.EnrolmentServiceFactory;
 import com.cognizant.enrolment.service.EnrolmentStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -10,7 +11,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import static com.cognizant.enrolment.Constants.*;
+import static com.cognizant.enrolment.Constants.SAMPLE_COURSE_ID2;
+import static com.cognizant.enrolment.Constants.SAMPLE_COURSE_NAME1;
+import static com.cognizant.enrolment.Constants.SAMPLE_COURSE_NAME2;
+import static com.cognizant.enrolment.Constants.SAMPLE_DOB;
+import static com.cognizant.enrolment.Constants.SAMPLE_EMAIL1;
+import static com.cognizant.enrolment.Constants.SAMPLE_EMAIL2;
+import static com.cognizant.enrolment.Constants.SAMPLE_FIRST_NAME;
+import static com.cognizant.enrolment.Constants.SAMPLE_LAST_NAME;
+import static com.cognizant.enrolment.Constants.SAMPLE_LOCATION;
+import static com.cognizant.enrolment.Constants.SAMPLE_STUDENT;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -22,7 +32,7 @@ public class MySqlEnrolmentServiceTest {
 
     @BeforeAll
     void init() {
-        service = assertDoesNotThrow(MySqlEnrolmentService::create);
+        service = assertDoesNotThrow(EnrolmentServiceFactory::getService);
     }
 
     @Test

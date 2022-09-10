@@ -3,6 +3,9 @@ package com.cognizant.enrolment;
 import com.cognizant.enrolment.model.Student;
 
 public class Constants {
+    private Constants() {
+    }
+
     public static final String SAMPLE_EMAIL1 = "example@abc.com";
     public static final String SAMPLE_EMAIL2 = "example1@abc.com";
     public static final String SAMPLE_FIRST_NAME = "John";

@@ -2,9 +2,10 @@ package com.cognizant.enrolment.application;
 
 import com.cognizant.enrolment.model.CourseList;
 import com.cognizant.enrolment.model.Student;
+import com.cognizant.enrolment.service.EnrolmentException;
 import com.cognizant.enrolment.service.EnrolmentService;
+import com.cognizant.enrolment.service.EnrolmentServiceFactory;
 import com.cognizant.enrolment.service.EnrolmentStatus;
-import com.cognizant.enrolment.service.impl.MySqlEnrolmentService;
 
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -43,7 +44,7 @@ public class EnrolmentApplication {
             this.out = out;
             println(ENROLMENT_WELCOME_MESSAGE);
             if(enrolmentService == null) {
-                enrolmentService = MySqlEnrolmentService.create();
+                enrolmentService = EnrolmentServiceFactory.getService();
             }
             boolean iterate = true;
             while(iterate) {
@@ -56,12 +57,12 @@ public class EnrolmentApplication {
                     default -> iterate = false;
                 }
             }
-        } catch (Exception e) {
+        } catch (EnrolmentException e) {
             out.println("Exception occurred with the enrolment process: " + e.getMessage());
         }
     }
 
-    private void enrol() throws Exception {
+    private void enrol() throws EnrolmentException {
         println(AVAILABLE_COURSES);
         out.println(getCourseList());
         int courseId = getCourseId();
@@ -84,13 +85,13 @@ public class EnrolmentApplication {
         println(status.equals(EnrolmentStatus.SUCCESS)? ENROLMENT_CONFIRMATION : STUDENT_EXISTS);
     }
 
-    private void view() throws Exception {
+    private void view() throws EnrolmentException {
         out.print(ENTER_EMAIL);
         var email = scanner.nextLine();
         println(enrolmentService.fetch(email).map(EnrolmentApplication::getEnrolmentDetails).orElseGet(() -> NO_ENROLMENT_EXISTS + email));
     }
 
-    private void update() throws Exception {
+    private void update() throws EnrolmentException {
         out.print(ENTER_EMAIL);
         String email = scanner.nextLine();
         var optStudent = enrolmentService.fetch(email);
@@ -112,7 +113,7 @@ public class EnrolmentApplication {
         }
     }
 
-    private void delete() throws Exception {
+    private void delete() throws EnrolmentException {
         out.print(ENTER_EMAIL);
         var email = scanner.nextLine();
         var status = enrolmentService.delete(email);
@@ -123,7 +124,7 @@ public class EnrolmentApplication {
         return ENROLMENT_DETAILS_PREFIX + student;
     }
 
-    private int getCourseId() throws Exception {
+    private int getCourseId() throws EnrolmentException {
         while(true) {
             out.print(ENTER_COURSE);
             int courseId = nextInt();
@@ -143,7 +144,7 @@ public class EnrolmentApplication {
         }
     }
 
-    private CourseList getCourseList() throws Exception {
+    private CourseList getCourseList() throws EnrolmentException {
         if(courseList == null) {
             courseList = enrolmentService.getCourseList();
         }
