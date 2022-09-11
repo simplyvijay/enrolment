@@ -14,7 +14,7 @@ import java.util.Scanner;
 
 public class CommandLineApplication {
 
-    public static final String ENROLMENT_WELCOME_MESSAGE = "Welcome to Enrolment Service";
+    public static final String ENROLMENT_WELCOME_MESSAGE = "Welcome to Student Enrolment System";
     public static final String ENROLMENT_OPTIONS = "\n1. Course Enrolment\n2. View Enrolment\n3. Update Enrolment\n4. Delete Enrolment\n5. Exit\nEnter Option: ";
     public static final String ENTER_COURSE = "Enter course id: ";
     public static final String NOT_VALID_COURSE = "Not a valid course id";
